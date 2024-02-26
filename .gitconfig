@@ -1,0 +1,17 @@
+[alias]
+	b = "!f()  { git branch | fzf | xargs git checkout; }; f"
+	linear = "!f() { git branch | grep -E '[a-z,A-Z]+-[0-9]+' | fzf | grep -o -E '[a-z,A-Z]+-[0-9]+' | xargs -I{} open 'https://linear.app/lunar/issue/{}'; }; f"
+	pr = "!f() { gh pr list --json number,title,headRefName,updatedAt,author --template '{{range .}}{{tablerow .number (timeago .updatedAt) .title .author.name .headRefName}}{{end}}' | fzf | awk '{print $1}' | xargs -r gh pr view --web; }; f"
+[branch]
+	sort = -committerdate
+[column]
+	ui = auto
+[core]
+    editor = code --wait
+[fetch]
+	prune = true
+[push]
+	autoSetupRemote = true
+	default = current
+[status]
+	short = true
