@@ -3,4 +3,4 @@ misc bash stuff
 
 ## Feeling Bashful? 💻
 
-Unless you're terminal-y ill from shell shock, there's no need to be shy! Come on and enjoy some random bash scribbles
+Unless you're terminal-y ill from shell shock, there's no need to be shy! Come on and enjoy some random scripts, installation helpers, and the like.
