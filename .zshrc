@@ -8,6 +8,8 @@ ddocs() {
     xargs -I{} \
       echo 'http://lunarway-prod-data-dbt-documentation.s3-website-eu-west-1.amazonaws.com/#!/model/model.lw_go_events.{}'
 }
+
+# Find and return docs block in '{{ doc("docs_block_name") }}' format
 doc() {
 # get all docs blocks and clean up
 awk '/{% docs/,/{% enddocs %}/ {if (NF && !/% enddocs %/) printf "%s ", $0; else if (NF) print ""}' ./**/*.md | \
@@ -26,6 +28,15 @@ fzf --ansi -e --header="Press enter to copy docs block to clipboard" --height=10
 awk '{printf "'\''{{ doc(\"%s\") }}'\''", $1}' | \
 # add to clipboard
 pbcopy
+}
+
+# usage: dbt run; notify --> sends popup on mac once first command is done running
+function notify() {
+  if [[ $? == 0 ]]; then
+    osascript -e 'display dialog "Your command has finished successfully" with title "Command Notification"'
+  else
+    osascript -e 'display dialog "Your command has failed" with title "Command Notification"'
+  fi
 }
 
 # fix these:
