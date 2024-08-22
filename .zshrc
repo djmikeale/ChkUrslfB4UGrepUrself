@@ -30,6 +30,113 @@ awk '{printf "'\''{{ doc(\"%s\") }}'\''", $1}' | \
 pbcopy
 }
 
+# release command simplification
+prep() {
+    # Prompt for release type
+    clear
+    echo "Constructing release command: \033[1;32mhubble release prepare master\033[0m"
+    echo "1) unstable"
+    echo "2) stable"
+    echo -n "Enter your choice (1 or 2): "
+    read -sk release_type_choice
+
+    case $release_type_choice in
+        1)
+            release_type="unstable"
+            ;;
+        2)
+            release_type="stable"
+            ;;
+        *)
+            echo "Invalid choice. Exiting."
+            return 1
+            ;;
+    esac
+
+    # Prompt for refresh type
+    clear
+    echo -e "Constructing release command: \033[1;32mhubble release prepare master ${release_type}\033[0m"
+    echo "1) default"
+    echo "2) selected"
+    echo "3) none"
+    echo -n "Enter your choice (1, 2, or 3): "
+    read -sk refresh_choice
+
+    case $refresh_choice in
+        1)
+            refresh=""
+            ;;
+        2)
+            refresh="--refresh SELECTED"
+            ;;
+        3)
+            refresh="--refresh NONE"
+            ;;
+        *)
+            echo "Invalid choice. Exiting."
+            return 1
+            ;;
+    esac
+
+    # Prompt for models if SELECTED was chosen
+    if [ "$refresh_choice" -eq 2 ]; then
+        clear
+        echo "Constructing release command: \033[1;32mhubble release prepare master ${release_type} ${refresh}\033[0m"
+        echo -n "Enter comma-separated list of models (and graph operators), e.g. account,f_account,+s_user: "
+        read models
+        changes="--model-selection-operator SELECTED --changes ${models}"
+    else
+        changes=""
+    fi
+
+    # Construct the final command
+    final_command="hubble release prepare master ${release_type} ${refresh} ${changes}"
+
+    # Execute, edit before execution, or print the command and exit
+    clear
+    echo "Constructed command: \033[1;32m$final_command \033[0m"
+    echo "1) Execute the command"
+    echo "2) Edit the command before execution"
+    echo "3) Print the command and exit"
+    echo -n "Enter your choice (1, 2, or 3): "
+    read -sk action_choice
+    clear
+
+    case $action_choice in
+        1)
+            # Execute the final command
+            echo "Running command: \033[1;32m$final_command \033[0m"
+            eval $final_command
+            ;;
+        2)
+            # Write the command to a temporary file for editing
+            tmpfile=$(mktemp /tmp/release_command.XXXXXX)
+            echo "$final_command" > $tmpfile
+
+            # Open the temporary file in the default editor
+            ${EDITOR:-nano} $tmpfile
+
+            # Read the edited command back from the file
+            final_command=$(cat $tmpfile)
+
+            # Clean up the temporary file
+            rm $tmpfile
+
+            # Execute the edited command
+            echo "Running edited command: \033[1;32m$final_command \033[0m"
+            eval $final_command
+            ;;
+        3)
+            # Print the final command and exit
+            echo "\033[1;32m$final_command \033[0m"
+            ;;
+        *)
+            echo "Invalid choice. Exiting."
+            return 1
+            ;;
+    esac
+}
+
 # usage: dbt run; notify --> sends popup on mac once first command is done running
 function notify() {
   if [[ $? == 0 ]]; then
